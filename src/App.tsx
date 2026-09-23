@@ -162,12 +162,29 @@ function App() {
       return
     }
 
+    const subject = encodeURIComponent(`Computer Science Course Enquiry - ${formData.studentName} (${formData.plan})`)
+    const body = encodeURIComponent(
+      [
+        'Student Name: ' + formData.studentName,
+        'Parent/Guardian Name: ' + formData.parentName,
+        'Class: ' + formData.className,
+        'Phone Number: ' + formData.phone,
+        'Email: ' + formData.email,
+        'Preferred Learning Plan: ' + formData.plan,
+        '',
+        'Message:',
+        formData.message,
+      ].join('\n'),
+    )
+
     setErrors({})
     setSubmitState({
       type: 'success',
-      message: 'Your enquiry has been sent successfully. I will contact you soon.',
+      message: 'Your email app is opening with your enquiry details. Please send the message to complete the enquiry.',
     })
     setFormData(initialForm)
+
+    window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`
   }
 
   const year = new Date().getFullYear()
