@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import type { ChangeEvent, FormEvent } from 'react'
 import {
   ArrowRight,
   BookOpen,
@@ -22,6 +21,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
+import EmailForm from './components/EmailForm'
 import './App.css'
 
 const navItems = [
@@ -80,16 +80,6 @@ const journeySteps = [
   { title: 'Achieve', description: 'Prepare confidently for exams and future Computer Science studies.' },
 ]
 
-const initialForm = {
-  studentName: '',
-  parentName: '',
-  className: '',
-  phone: '',
-  email: '',
-  plan: '6-Month Course',
-  message: '',
-}
-
 function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDarkTheme, setIsDarkTheme] = useState(() => {
@@ -100,12 +90,6 @@ function App() {
 
     return window.matchMedia('(prefers-color-scheme: dark)').matches
   })
-  const [formData, setFormData] = useState(initialForm)
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [submitState, setSubmitState] = useState<{ type: 'idle' | 'success' | 'error'; message: string }>({
-    type: 'idle',
-    message: '',
-  })
 
   const toggleTheme = () => {
     setIsDarkTheme((prev) => !prev)
@@ -115,77 +99,6 @@ function App() {
     document.documentElement.setAttribute('data-theme', isDarkTheme ? 'dark' : 'light')
     window.localStorage.setItem('theme', isDarkTheme ? 'dark' : 'light')
   }, [isDarkTheme])
-
-  const handleInputChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) => {
-    const { name, value } = event.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    setErrors((prev) => ({ ...prev, [name]: '' }))
-    setSubmitState({ type: 'idle', message: '' })
-  }
-
-  const validateForm = () => {
-    const nextErrors: Record<string, string> = {}
-
-    if (!formData.studentName.trim()) nextErrors.studentName = 'Student name is required.'
-    if (!formData.parentName.trim()) nextErrors.parentName = 'Parent/guardian name is required.'
-    if (!formData.className.trim()) nextErrors.className = 'Class is required.'
-
-    if (!formData.phone.trim()) {
-      nextErrors.phone = 'Phone number is required.'
-    } else if (!/^\+?[0-9\s-]{10,15}$/.test(formData.phone.trim())) {
-      nextErrors.phone = 'Please enter a valid phone number.'
-    }
-
-    if (!formData.email.trim()) {
-      nextErrors.email = 'Email is required.'
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      nextErrors.email = 'Please enter a valid email address.'
-    }
-
-    if (!formData.message.trim()) nextErrors.message = 'Please share a short message.'
-
-    return nextErrors
-  }
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const nextErrors = validateForm()
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors)
-      setSubmitState({
-        type: 'error',
-        message: 'Please fix the highlighted fields before sending your enquiry.',
-      })
-      return
-    }
-
-    const subject = encodeURIComponent(`Computer Science Course Enquiry - ${formData.studentName} (${formData.plan})`)
-    const body = encodeURIComponent(
-      [
-        'Student Name: ' + formData.studentName,
-        'Parent/Guardian Name: ' + formData.parentName,
-        'Class: ' + formData.className,
-        'Phone Number: ' + formData.phone,
-        'Email: ' + formData.email,
-        'Preferred Learning Plan: ' + formData.plan,
-        '',
-        'Message:',
-        formData.message,
-      ].join('\n'),
-    )
-
-    setErrors({})
-    setSubmitState({
-      type: 'success',
-      message: 'Your email app is opening with your enquiry details. Please send the message to complete the enquiry.',
-    })
-    setFormData(initialForm)
-
-    window.location.href = `mailto:${emailAddress}?subject=${subject}&body=${body}`
-  }
 
   const year = new Date().getFullYear()
 
@@ -506,99 +419,7 @@ function App() {
               <h2>Let&apos;s Start Learning</h2>
             </div>
 
-            <form className="contact-form" onSubmit={handleSubmit} noValidate>
-              <div className="form-grid">
-                <label>
-                  <span>Student Name</span>
-                  <input
-                    type="text"
-                    name="studentName"
-                    value={formData.studentName}
-                    onChange={handleInputChange}
-                    className={errors.studentName ? 'input-error' : ''}
-                  />
-                  {errors.studentName && <small>{errors.studentName}</small>}
-                </label>
-
-                <label>
-                  <span>Parent/Guardian Name</span>
-                  <input
-                    type="text"
-                    name="parentName"
-                    value={formData.parentName}
-                    onChange={handleInputChange}
-                    className={errors.parentName ? 'input-error' : ''}
-                  />
-                  {errors.parentName && <small>{errors.parentName}</small>}
-                </label>
-
-                <label>
-                  <span>Class</span>
-                  <input
-                    type="text"
-                    name="className"
-                    value={formData.className}
-                    onChange={handleInputChange}
-                    className={errors.className ? 'input-error' : ''}
-                  />
-                  {errors.className && <small>{errors.className}</small>}
-                </label>
-
-                <label>
-                  <span>Phone Number</span>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className={errors.phone ? 'input-error' : ''}
-                  />
-                  {errors.phone && <small>{errors.phone}</small>}
-                </label>
-
-                <label>
-                  <span>Email</span>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className={errors.email ? 'input-error' : ''}
-                  />
-                  {errors.email && <small>{errors.email}</small>}
-                </label>
-
-                <label>
-                  <span>Preferred Learning Plan</span>
-                  <select name="plan" value={formData.plan} onChange={handleInputChange}>
-                    <option>6-Month Course</option>
-                    <option>Hourly Course</option>
-                  </select>
-                </label>
-              </div>
-
-              <label className="message-field">
-                <span>Message</span>
-                <textarea
-                  name="message"
-                  rows={5}
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  className={errors.message ? 'input-error' : ''}
-                />
-                {errors.message && <small>{errors.message}</small>}
-              </label>
-
-              {submitState.type !== 'idle' && (
-                <div className={`form-status ${submitState.type}`} role="status">
-                  {submitState.message}
-                </div>
-              )}
-
-              <button type="submit" className="primary-button form-button">
-                Send Enquiry
-              </button>
-            </form>
+            <EmailForm />
           </div>
 
           <div className="details-column">
